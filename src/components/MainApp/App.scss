@@ -1,0 +1,22 @@
+.app {
+  &__background-map {
+    position: fixed;
+    background: rgb(59, 72, 84);
+    background: linear-gradient(to bottom, rgb(59, 72, 84) 0%, rgb(25, 33, 41) 100%), url(./map.png);
+    background-blend-mode: multiply;
+    background-position: center center;
+    background-size: cover;
+    height: 100%;
+    width: 100%;
+    z-index: -1;
+    top: 0;
+    left: 0;
+  }
+  &__form-wrapper {
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+    max-width: 370px;
+    position: relative;
+  }
+}

